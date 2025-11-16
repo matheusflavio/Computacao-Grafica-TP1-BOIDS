@@ -5,9 +5,9 @@ Projeto de Computação Gráfica feito utilizando OpenGL e C++ para simular o co
 **Universidade Federal de Minas Gerais (UFMG)**
 
 # Falta fazer:
-[ ] Tirar prints para a documentação do trabalho
+[x] Tirar prints para a documentação do trabalho
 [ ] Gravar um vídeo de apresentação para aumentar o leque de possibilidades de apresentação caso aconteça algum problema
-[ ] Revisar o trabalho, documentação
+[x] Revisar o trabalho, documentação
 [ ] Enviar para avaliação
 
 ## 🎯 Plataformas Suportadas
