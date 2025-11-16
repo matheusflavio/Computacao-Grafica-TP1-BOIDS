@@ -4,10 +4,16 @@ Projeto de Computação Gráfica feito utilizando OpenGL e C++ para simular o co
 
 **Universidade Federal de Minas Gerais (UFMG)**
 
+# Falta fazer:
+[ ] Tirar prints para a documentação do trabalho
+[ ] Gravar um vídeo de apresentação para aumentar o leque de possibilidades de apresentação caso aconteça algum problema
+[ ] Revisar o trabalho, documentação
+[ ] Enviar para avaliação
+
 ## 🎯 Plataformas Suportadas
 
 - ✅ **Linux** (Ubuntu, Debian, Zorin OS e derivados)
-- ✅ **Windows** (Windows 10/11 via MSYS2/MinGW)
+- ❓ **Windows** (Windows 10/11 via MSYS2/MinGW ou talvez só com WSL)
 
 ## ⌨️ Controles
 
@@ -20,10 +26,11 @@ Projeto de Computação Gráfica feito utilizando OpenGL e C++ para simular o co
 - **L**: Trava/destrava orientação da câmera para o centro do grupo
 - **P**: Pausa o jogo
 - **[**: Debug - pula um frame a cada clique (imprime coordenadas)
-- **+** ou **=**: Cria novo boid perto do grupo
+- **U**: Cria novo boid perto do grupo (funciona até pausado)
 - **-**: Remove um boid aleatório (mantém mínimo de 1)
 - **I** e **O**: Controla velocidade do boid objetivo (verde grande)
 - **N** e **M**: Controla velocidade do grupo de boids
+- **F**: Ativa/desativa fog atmosférico
 - **WASD**: Move a câmera
 - **Ctrl**: Move câmera para baixo
 - **Espaço**: Move câmera para cima
@@ -179,20 +186,45 @@ make clean
 
 ## 🎮 Simulação BOIDS
 
-Este projeto implementa um sistema de simulação de comportamento coletivo inspirado no movimento de pássaros (BOIDS - Bird-like Objects). O sistema inclui:
+Este projeto implementa um sistema completo de simulação de comportamento coletivo inspirado no movimento de pássaros (BOIDS - Bird-like Objects). O sistema inclui:
 
 - **Separação**: Evita aglomeração com outros boids
 - **Alinhamento**: Alinha velocidade com boids vizinhos
 - **Coesão**: Move em direção ao centro do grupo
-- **Objetivo**: Segue um boid objetivo (verde grande)
-- **Obstáculos**: Desvia de torres e paredes
+- **Objetivo**: Segue um boid objetivo (verde grande - goal boid)
+- **Guia Invisível**: Boid fantasma (ghost boid) que orienta o comportamento coletivo
+- **Obstáculos**: Desvia de torres cilíndricas e paredes usando detecção de colisão
+- **Sombras**: Renderiza sombras de boids com efeito de asas e sombras dos obstáculos
+- **Fog Atmosférico**: Efeito de profundidade via fog exponencial ativável em tempo real
+- **Iluminação Phong**: Modelo de iluminação real-time com preview interativo
 
 ## 📝 Notas de Desenvolvimento
 
-- O código usa GLM para operações de álgebra linear
-- FreeType é usado para renderização de texto
-- GLAD é usado para carregar funções OpenGL
-- GLFW gerencia janela e entrada do usuário
+### Recursos Principais Implementados
+
+**Funcionalidades Básicas (6/6 - 100%)**
+- ✅ Mundo 3D com obstáculos (torres)
+- ✅ Quatro modos de câmera dinâmica
+- ✅ Iluminação Phong com Preview interativo (tecla C)
+- ✅ Boids renderizados como pirâmides com animação de asas
+- ✅ Criação e remoção dinâmica de boids (U e MINUS)
+- ✅ Animação independente de asas para cada boid
+
+**Funcionalidades Extras (6/6 - 100%)**
+- ✅ Obstáculos com colisão inteligente e desvio
+- ✅ Sombras de boids (com efeito de asas) e sombras de obstáculos
+- ✅ Fog atmosférico exponencial (tecla F)
+- ✅ Modo pausa com debug step-by-step (tecla P e [)
+- ✅ Redimensionamento responsivo de janela
+- ✅ Banking simplificado (inclinação em curvas)
+
+### Tecnologia
+
+- O código usa **GLM** para operações de álgebra linear
+- **FreeType** é usado para renderização de texto
+- **GLAD** carrega funções OpenGL dynamicamente
+- **GLFW** gerencia janela, eventos e contexto OpenGL
+- **C++11** com suporte a RAII e memory safety
 
 ## 🐛 Resolução de Problemas
 

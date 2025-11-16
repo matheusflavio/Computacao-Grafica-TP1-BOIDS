@@ -777,25 +777,37 @@ bool GameController::isValidBoidPosition(v3 pos) {
 void GameController::createRandomBoid() {
     int distance = 25;
     v3 boidsCenter = getBoidGroupCenter();
-    v3 randomPos;
-
     int count = 0;
-    GObject *boid;
+    GObject *boid = nullptr;
+    v3 chosenPos = v3(0.0f, 0.0f, 0.0f);
     do {
-        boid = new Boid(v3(0.0f, 0.0f, 0.0f));
-        boid->translate(v3((rand() % distance)-distance/2 + boidsCenter.x, (rand() % 20) - 5 + boidsCenter.y, (rand() % distance)-distance/2 + boidsCenter.z));
+        // generate candidate position around the boid group center
+        chosenPos = v3(
+            (rand() % distance) - distance/2 + boidsCenter.x,
+            (rand() % 20) - 5 + boidsCenter.y,
+            (rand() % distance) - distance/2 + boidsCenter.z
+        );
+        boid = new Boid(chosenPos);
         count++;
-    }while(!isValidBoidPosition(boid->getPosition()) && count < 10);
-    if(count >= 10) return;
-    // GObject *boid = new Boid(v3(0.0f, 0.0f, 0.0f));
+    } while(!isValidBoidPosition(boid->getPosition()) && count < 10);
+
+    if(count >= 10) {
+        // couldn't find valid pos after attempts
+        if(boid != nullptr) delete boid;
+        return;
+    }
+
+    // register boid for rendering and logic
     objectsPlaneText.push_back(boid);
-
     Boid *boidD = dynamic_cast<Boid*>(boid);
-    boidD->syncWith(boids[0]);
-
-    // boidD->rotateBoid(boids[0]->rotated);
-    boid->translate(randomPos);
+    if(boidD != nullptr && !boids.empty()) {
+        boidD->syncWith(boids[0]);
+    }
     boids.push_back(boidD);
+
+    // Diagnostic log to help verify spawn at runtime
+    printf("[GameController::createRandomBoid] spawned at: %f %f %f | total boids=%zu\n",
+           boid->getPosition().x, boid->getPosition().y, boid->getPosition().z, boids.size());
 }
 
 void GameController::deleteRandomBoid() {

@@ -31,7 +31,11 @@ void Boid::frameUpdate() {
     // Chama o frameUpdate da classe pai
     GObject::frameUpdate();
 
-    // Se não está rotacionando, retorna
+    // Calcula banking (roll) baseado em mudança de velocidade/aceleração lateral
+    // Executa sempre (mesmo quando não está rotacionando em yaw)
+    calculateBankingAngle();
+
+    // Se não está rotacionando em yaw, apenas prossegue com banking já aplicado acima
     if(!rotating) {
         return;
     }
@@ -148,4 +152,62 @@ Boid::Boid(v3 translation, v3 color) {
     // Define velocidade inicial
     this->speedVector = v3(0.00f, 0.00f, 1.0f);
     this->speed = 0.1f;
+}
+
+// Calcula e aplica um pequeno ângulo de roll (em torno do eixo Z local) para simular banking
+void Boid::calculateBankingAngle() {
+    v3 currentPos = this->getPosition();
+
+    // Inicialização do histórico
+    if(banking_frameCounter == 0) {
+        banking_prevPos = currentPos;
+        banking_lastVel = this->speedVector;
+        banking_frameCounter++;
+        return;
+    }
+
+    // velocidade estimada (posição atual - posição anterior)
+    v3 vel = currentPos - banking_prevPos;
+    // aceleração aproximada (variação de velocidade)
+    v3 accel = vel - banking_lastVel;
+
+    float accelMag = glm::length(accel);
+    float speedMag = glm::length(this->speedVector);
+
+    float targetRollRad = 0.0f;
+    if(speedMag > 0.01f) {
+        // curvatura aproximada = atan(|a| / |v|) ; reduzimos a magnitude para efeito visual
+        targetRollRad = atan(accelMag / speedMag) * 0.25f;
+
+        // Determina o sinal do roll usando o produto vetorial entre forward e aceleração lateral
+        v3 forward = glm::normalize(this->speedVector);
+        float sign = 1.0f;
+        if(glm::length(accel) > 0.0001f) {
+            v3 lateral = accel;
+            float crossY = glm::dot(glm::cross(forward, lateral), v3(0.0f, 1.0f, 0.0f));
+            sign = crossY >= 0.0f ? 1.0f : -1.0f;
+        }
+        targetRollRad *= sign;
+    }
+
+    float targetDeg = glm::degrees(targetRollRad);
+    // limita o ângulo para evitar rotações exageradas
+    if(targetDeg > 25.0f) targetDeg = 25.0f;
+    if(targetDeg < -25.0f) targetDeg = -25.0f;
+
+    this->targetRollDeg = targetDeg;
+
+    // interpolação suave
+    float deltaDeg = (this->targetRollDeg - this->currentRollDeg) * 0.15f;
+
+    if(fabs(deltaDeg) > 0.0005f) {
+        // Aplica rotação em Z (roll) no modelo geométrico
+        this->rotate(v3(0.0f, 0.0f, deltaDeg));
+        this->currentRollDeg += deltaDeg;
+    }
+
+    // atualiza histórico
+    banking_lastVel = vel;
+    banking_prevPos = currentPos;
+    banking_frameCounter++;
 }

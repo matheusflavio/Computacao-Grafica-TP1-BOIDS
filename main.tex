@@ -110,12 +110,12 @@ Cada boid é representado internamente como uma pirâmide composta por cinco tri
 \subsection{Obstáculos e Colisão}
 O mundo contém cinco torres cilíndricas dispostas estrategicamente como obstáculos. Cada boid verifica colisão com estas estruturas e modifica seu vetor de velocidade para desviar de forma suave. A detecção de colisão utiliza distância Euclidiana entre o boid e o centro da torre, com raio de colisão dependente da altitude do boid para comportamento mais realista.
 
-Adicionalmente, implementou-se um boid objetivo (ghost goal) que não colide com obstáculos, servindo como ponto de atração para o enxame sem ser bloqueado pela geometria.
+Adicionalmente, implementou-se um boid objetivo (goal boid) que serve como ponto de atração para o enxame, bem como um boid fantasma (ghost boid) que guia o comportamento coletivo invisível para o usuário.
 
 \subsection{Iluminação e Sombras}
-O sistema de iluminação foi implementado utilizando o modelo Phong em tempo real, computado no fragment shader. A cena é iluminada por uma fonte de luz posicional com componentes ambiente, difusa e especular.
+O sistema de iluminação foi implementado utilizando o modelo Phong em tempo real, computado no fragment shader. A cena é iluminada por uma fonte de luz posicional com componentes ambiente, difusa e especular, com preview interativo acessível via tecla C.
 
-Para sombreamento, utilizou-se uma técnica de projeção paralela simplificada onde objetos são projetados no plano do solo em uma altura constante. Isto foi implementado em dois contextos: \textit{ShadowRenderer} para sombras de boids e \textit{DynamicObstacleShadowRenderer} para sombras de obstáculos. A otimização de batching foi aplicada, realizando um único draw call por frame para todas as sombras de um tipo, reduzindo overhead de renderização.
+Para sombreamento, utilizou-se uma técnica de projeção paralela simplificada onde objetos são projetados no plano do solo em uma altura constante. Foram implementadas duas categorias de sombra: \textit{ShadowRenderer} renderiza sombras dos boids com deformação de asas sincronizada ao movimento, enquanto \textit{DynamicObstacleShadowRenderer} renderiza sombras dos obstáculos (torres) com cálculo de altura relativa. A otimização de batching foi aplicada, realizando um único draw call por frame para todas as sombras de um tipo, reduzindo overhead de renderização.
 
 \subsection{Câmeras e Projeção}
 Foram implementadas quatro modos de câmera diferentes: (1) câmera fixa na torre de observação, (2) câmera atrás do boid objetivo, (3) câmera lateral direita e (4) câmera lateral esquerda. Todas utilizam projeção perspectiva com aspect ratio dinâmico responsivo ao redimensionamento de janela.
@@ -156,19 +156,19 @@ Pausa e debug step-by-step & Extra & \textbf{✓} Implementado \\
 \hline
 Reshape (redimensionamento) & Extra & \textbf{✓} Implementado \\
 \hline
-Banking (pitch/yaw/roll) & Extra & -- Futuro \\
+Banking (roll) & Extra & \textbf{✓} Implementado (simplificado) \\
 \hline
 \end{tabularx}
 \end{table}
 
 \subsection{Requisitos Básicos}
-Todos os seis requisitos básicos foram implementados com sucesso. O mundo contém um plano infinito como solo e cinco torres cilíndricas como obstáculos estáticos. Os boids são renderizados como pirâmides compostas por múltiplos triângulos, permitindo visualização adequada de orientação e movimento. O sistema suporta criação e remoção dinâmica de boids através de entrada do usuário, e a animação de asas é realizada independentemente para cada boid mediante deformação de geometria em tempo real. A câmera oferece quatro perspectivas diferentes (torre, atrás, lateral direita e lateral esquerda), excedem do a especificação de três modos.
+Todos os seis requisitos básicos foram implementados com sucesso. O mundo contém um plano infinito como solo e cinco torres cilíndricas como obstáculos estáticos. Os boids são renderizados como pirâmides compostas por múltiplos triângulos, permitindo visualização adequada de orientação e movimento. O sistema suporta criação e remoção dinâmica de boids através da tecla U (adicionar) e MINUS (remover), funcionando também durante pausa. A animação de asas é realizada independentemente para cada boid mediante deformação de geometria em tempo real. A câmera oferece quatro perspectivas diferentes (torre, atrás, lateral direita e lateral esquerda), excedendo a especificação de três modos.
 
 \subsection{Obstáculos e Colisão}
 Cinco torres foram posicionadas estrategicamente no ambiente. Cada boid detecta colisão com estas estruturas e executa comportamento de fuga priorizada em relação às outras regras de flocking. O sistema implementa também um boid objetivo virtual que navega através dos obstáculos sem interação com eles, servindo como ponto de atração para o enxame.
 
 \subsection{Sombras Dinâmicas}
-Tanto boids quanto obstáculos projetam sombras no solo de forma suave e contínua. O sistema utiliza projeção paralela para simplicidade computacional e otimização de batching para reduzir chamadas de renderização. Alternativamente, sombras podem ser desabilitadas sem impacto no restante do sistema.
+Tanto boids quanto obstáculos projetam sombras no solo de forma suave e contínua. O sistema utiliza projeção paralela para simplicidade computacional e otimização de batching para reduzir chamadas de renderização. Ambas as categorias podem ser desabilitadas independentemente sem impacto no restante do sistema. As sombras dos boids incluem deformação sincronizada ao movimento de asas, criando efeito visual mais dinâmico.
 
 \subsection{Fog Atmosférico}
 Fog exponencial foi implementado no shader, criando efeito de profundidade visual realista. O efeito pode ser ativado ou desativado em tempo real com a tecla F, sem necessidade de recompilação.
@@ -181,46 +181,48 @@ A aplicação responde dinamicamente a redimensionamento da janela, atualizando 
 
 \subsection{Controles Disponíveis}
 \begin{lstlisting}
-Câmeras:       1 (torre), 2 (atrás), 3 (lado direito), 4 (lado esquerdo)
-Boids:         U (criar), MINUS (remover)
-Efeitos:       P (pausa), F (fog), C (light preview)
-Debug:         [ (step-by-step), ] (avançar frame)
-Visualização:  Drag mouse para rotacionar câmera
+Cameras:       1 (torre), 2 (fim), 3 (lado direito), 4 (lado esquerdo), L (travar/destravar)
+Boids:         U (criar), - (remover)
+Velocidade:    O/I (ajustar goal boid), M/N (ajustar grupo)
+Efeitos:       P (pausa), F (fog), C (light preview/confirma)
+Debug:         [ (step-by-step modo debug)
+Visualizar:    WASD (move), Space (sobe), Ctrl (desce), Shift (acelera)
+Scroll:        Afasta/aproxima luz em modo preview
 \end{lstlisting}
 
 \section{Resultados e Visualização}
 
 A seguir são apresentadas capturas de tela demonstrando as principais funcionalidades da aplicação:
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{screenshots/screenshot_01_inicio.png}
 \caption{Execução inicial da simulação mostrando boids em formação, câmera de torre e ambiente com obstáculos.}
 \label{fig:inicio}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{screenshots/screenshot_02_pausa.png}
 \caption{Modo de pausa ativo (tecla P) demonstrando congelamento de movimento com câmera ainda responsiva.}
 \label{fig:pausa}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{screenshots/screenshot_03_debug_resize.png}
 \caption{Modo debug (tecla [) com janela redimensionada, demonstrando avanço frame-a-frame e responsividade de viewport.}
 \label{fig:debug}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{screenshots/screenshot_04_fog.png}
 \caption{Efeito de fog atmosférico (tecla F) criando profundidade visual com blending gradual.}
 \label{fig:fog}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{screenshots/screenshot_05_light_preview.png}
 \caption{Modo light preview (tecla C) exibindo iluminação Phong aplicada aos boids e ambiente.}
@@ -230,7 +232,7 @@ A seguir são apresentadas capturas de tela demonstrando as principais funcional
 \section{Discussão}
 
 \subsection{Arquitetura e Design}
-A refatoração do código introduziu módulos especializados que melhoram manutenibilidade e extensibilidade. A separação de responsabilidades entre \textit{InputHandler} (entrada), \textit{SceneBuilder} (construção de geometria), \textit{ShadowRenderer} e \textit{DynamicObstacleShadowRenderer} (renderização de sombras) facilita futuras extensões sem modificação de código existente.
+Dado a implementação inicial do projeto de forma funcional, a refatoração do código introduziu módulos especializados que melhoram manutenibilidade e extensibilidade. A separação de responsabilidades entre \textit{InputHandler} (entrada), \textit{SceneBuilder} (construção de geometria), \textit{ShadowRenderer} e \textit{DynamicObstacleShadowRenderer} (renderização de sombras) facilita futuras extensões sem modificação de código existente.
 
 O uso de RAII (Resource Acquisition Is Initialization) com \texttt{std::vector} eliminou vazamentos de memória presentes nas versões anteriores, e a adição de verificações de NULL pointer evitou segmentation faults durante operações sensíveis.
 
@@ -247,13 +249,16 @@ O sistema mantém performance estável em 60 FPS mesmo com múltiplos boids, obs
 Durante a implementação, alguns desafios técnicos surgiram:
 
 \begin{itemize}
-\item \textbf{Segmentation faults iniciais:} Causados por dereference de pointers nulos e double-free em geometria, resolvidos com RAII e verificações defensivas
+\item \textbf{Ambiente adequado:} Inicialmente esse projeto foi idealizado e teve o início de seu desenvolvimento em ambiente Windows 11 usando o VSCode e o Visua Studio para tentar instalar as bibliotecas. Contudo, houveram muitos problemas com a instalação e utilização das mesmas por meio de várias fontes, então a plataforma foi abandonada e passou-se a implementação para um notebook com Zorin OS\item \textbf{Segmentation faults iniciais:} Causados por dereference de pointers nulos e double-free em geometria, resolvidos com RAII e verificações defensivas
 \item \textbf{Sombras de obstáculos:} A primeira abordagem com ray-plane intersection era computacionalmente cara, substituída por projeção paralela eficiente
 \item \textbf{Compatibilidade de hardware:} O projeto foi otimizado para executar em hardware modesto (i5-6200U + GeForce 940M) sem thermal throttling
 \end{itemize}
 
 \subsection{Conformidade e Cobertura}
-O projeto atingiu 100\% de conformidade com especificações (12 de 12 requisitos). O requisito Banking foi implementado na sua forma simplificada (roll baseado em aceleração lateral) para garantir um efeito visual de inclinação em curvas sem custo significativo de desempenho. A implementação priorizou estabilidade e baixo overhead, evitando quaternions complexos nesta fase.
+O projeto atingiu 100\% de conformidade com especificações (12 de 12 requisitos). Todos os requisitos básicos foram completamente implementados: mundo com obstáculos, quatro modos de câmera (excedendo o requisito de três), iluminação Phong, boids como pirâmides, criação/remoção dinâmica de boids (teclas U e MINUS), e animação de asas independente. Os cinco requisitos extras também foram implementados: obstáculos com colisão e desvio, sombras de boids e obstáculos, fog atmosférico, modo pausa com debug step-by-step, e redimensionamento responsivo de janela. O requisito Banking foi implementado na sua forma simplificada (roll baseado em aceleração lateral) para garantir um efeito visual de inclinação em curvas sem custo significativo de desempenho. A implementação priorizou estabilidade e baixo overhead, evitando quaternions complexos nesta fase.
+
+\subsection{Sistema de Entrada e Interação}
+O sistema de entrada foi otimizado para capturar eventos de teclado de forma robusta. A tecla U (criar boid) funciona tanto quando o jogo está em execução quanto quando pausado, permitindo manipulação flexível do cenário. A tecla MINUS remove boids aleatoriamente (mantendo sempre uma quantidade mínima para a simulação funcionar). O preview de iluminação (tecla C) permite posicionar a fonte de luz com rotação via clique direito do mouse e scroll para aumentar/diminuir distância, com confirmação pela mesma tecla C.
 
 \subsection{Banking (implementado)}
 Foi implementada uma versão simplificada de Banking focada no "roll" (inclinação) durante curvas. O algoritmo estima curvatura a partir da aceleração lateral aproximada (variação de velocidade entre frames) e aplica uma pequena rotação em Z ao modelo do boid. A abordagem escolhida provê um efeito visual convincente com custo computacional muito baixo, adequado para hardware modesto.
@@ -272,6 +277,6 @@ Este trabalho prático implementou com sucesso uma simulação completa de boids
 
 A cobertura de 100\% dos requisitos (6/6 básicos + 6/6 extras) demonstra implementação completa e sólida. A decisão por uma implementação simplificada de Banking equilibrou qualidade visual, custo computacional e robustez em hardware limitado.
 
-A qualidade do código é evidenciada por ausência total de crashes, vazamentos de memória e performance estável, mesmo em hardware limitado. O sistema é robusto, extensível e pronto para apresentação e futuras extensões.
+O sistema aparenta ser robusto, extensível e pronto para apresentação e futuras extensões. Uma ideia experimentada foi a utilização de sombras dinâmicas dependendo da fonte de luz, podendo ser alteradas de acordo com a posição que a fonte de luz é colocada por meio da ferramenta implementada na tecla C. Contudo, seja por limitações de hardware ou implementação não otimizada, a utilização dessas ficou insustentável de praticar no laptop, apresentando diversos travamentos por aquecimento extremo.
 
 \end{document}

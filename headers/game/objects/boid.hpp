@@ -16,6 +16,11 @@ class Boid : public GObject {
         Boid(v3 translation);
         Boid(v3 translation, v3 color);
 
+        // Banking: roll (inclinação) visual para curvas
+        // Implementação simplificada: calcula curvatura aproximada e aplica pequena rotação em Z
+        void calculateBankingAngle();
+        float getCurrentRollDeg();
+
         bool rotating = 0.0f;
         vector<GLfloat> rotatingQueue;
 
@@ -34,6 +39,10 @@ class Boid : public GObject {
 
         void setRotatingNegative(bool flag);
 
+    // Banking state (degrees)
+    float currentRollDeg = 0.0f; // rotação em Z aplicada ao modelo (graus)
+    float targetRollDeg = 0.0f;
+
     private:
         bool rotatingNeg = false;
         int leftWingId;
@@ -43,6 +52,10 @@ class Boid : public GObject {
 
         bool animationStarted = false;
         float yCoord;
+        // Banking internals
+        v3 banking_prevPos = v3(0.0f);
+        v3 banking_lastVel = v3(0.0f);
+        int banking_frameCounter = 0;
 
 
 };
