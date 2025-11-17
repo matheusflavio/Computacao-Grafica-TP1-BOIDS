@@ -752,10 +752,7 @@ v3 GameController::getBoidGroupCenter() {
         count++;
     }
     if(count == 0) return v3(0.0f, 0.0f, 0.0f);
-    sum.x /= count;
-    sum.y /= count;
-    sum.z /= count;
-    return sum;
+    return sum/=count;
 }
 
 bool GameController::isValidBoidPosition(v3 pos) {
@@ -775,40 +772,77 @@ bool GameController::isValidBoidPosition(v3 pos) {
 }
 
 void GameController::createRandomBoid() {
-    int distance = 25;
-    v3 boidsCenter = getBoidGroupCenter();
-    int count = 0;
-    GObject *boid = nullptr;
-    v3 chosenPos = v3(0.0f, 0.0f, 0.0f);
-    do {
-        // generate candidate position around the boid group center
-        chosenPos = v3(
-            (rand() % distance) - distance/2 + boidsCenter.x,
-            (rand() % 20) - 5 + boidsCenter.y,
-            (rand() % distance) - distance/2 + boidsCenter.z
-        );
-        boid = new Boid(chosenPos);
-        count++;
-    } while(!isValidBoidPosition(boid->getPosition()) && count < 10);
+    const float horizontalRadius = 120.0f;   // distância lateral
+    const float forwardBackRange = 220.0f;   // frente/atrás do centro
+    const float verticalVariation = 45.0f;   // variação controlada de altura
+    const int maxAttempts = 10;
 
-    if(count >= 10) {
-        // couldn't find valid pos after attempts
-        if(boid != nullptr) delete boid;
+    v3 center = getBoidGroupCenter();
+    GObject* boid = nullptr;
+    v3 pos;
+
+    int attempts = 0;
+    while (attempts < maxAttempts) {
+
+        // deslocamento lateral (esquerda/direita)
+        float dx = ((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * horizontalRadius;
+
+        // deslocamento frente/atrás
+        float dz = ((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * forwardBackRange;
+
+        // altura controlada em torno do centro (nunca muito acima ou abaixo)
+        float dy = ((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * verticalVariation;
+
+        if(rand() % 2 == 0){
+            pos = v3(center.x + dx,
+                center.y + dy,
+                center.z + dz);
+        }
+        else {
+            pos = v3(center.x - dx,
+                center.y - dy,
+                center.z + dz);
+        }
+
+        // cria boid para checar posição
+        boid = new Boid(pos);
+
+        if (isValidBoidPosition(boid->getPosition()))
+            break;
+
+        delete boid;
+        boid = nullptr;
+        attempts++;
+    }
+
+    if (!boid) {
+        // Falhou após as tentativas
         return;
     }
 
-    // register boid for rendering and logic
+    // registra objeto
     objectsPlaneText.push_back(boid);
-    Boid *boidD = dynamic_cast<Boid*>(boid);
-    if(boidD != nullptr && !boids.empty()) {
-        boidD->syncWith(boids[0]);
-    }
-    boids.push_back(boidD);
 
-    // Diagnostic log to help verify spawn at runtime
-    printf("[GameController::createRandomBoid] spawned at: %f %f %f | total boids=%zu\n",
-           boid->getPosition().x, boid->getPosition().y, boid->getPosition().z, boids.size());
+    Boid* b = dynamic_cast<Boid*>(boid);
+    if (b && !boids.empty()) {
+        b->syncWith(boids[0]);  // poderia sincronizar com boids mais próximos também
+    }
+    boids.push_back(b);
+
+    printf("center: %f %f %f\n",
+           center.x,
+           center.y,
+           center.z);
+
+    printf("ghostBoid: %f %f %f\n",
+           ghostBoid->getPosition().x,
+           ghostBoid->getPosition().y,
+           ghostBoid->getPosition().z);
+
+    printf("[Spawn] Boid at: %f %f %f | total=%zu\n",
+           pos.x, pos.y, pos.z, boids.size());
 }
+
 
 void GameController::deleteRandomBoid() {
     // delete random boid

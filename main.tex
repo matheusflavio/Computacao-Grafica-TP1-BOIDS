@@ -73,7 +73,7 @@ Este trabalho prático implementa uma simulação de boids (autonomous agents) e
 
 O projeto foi desenvolvido em C++11 com OpenGL 3.3 Core Profile, utilizando as bibliotecas GLAD para carregamento de extensões OpenGL, GLFW para gerenciamento de janela e eventos, e GLM para operações matemáticas de álgebra linear. O resultado é uma aplicação interativa que renderiza boids animados em um ambiente 3D com iluminação Phong, sombras dinâmicas e sistemas de obstáculos com detecção de colisão.
 
-A implementação satisfaz integralmente os requisitos básicos de projeto (100\% de conformidade) e implementa cinco de seis requisitos extras (83\% de conformidade), totalizando uma cobertura de 92\% das especificações. O sistema foi otimizado para executar em hardware modesto, apresentando performance estável sem crashes ou vazamentos de memória.
+A implementação satisfaz integralmente os requisitos básicos de projeto (100\% de conformidade) e implementa seis de seis requisitos extras (100\% de conformidade), totalizando uma cobertura de 100\% das especificações. O sistema foi otimizado para executar em hardware modesto, apresentando performance estável sem crashes ou vazamentos de memória.
 
 \section{Organização do Projeto}
 O projeto foi estruturado em módulos desacoplados seguindo princípios de engenharia de software, com separação clara entre headers (definições) e implementação (código). A organização de pastas é apresentada como segue:
@@ -118,7 +118,7 @@ O sistema de iluminação foi implementado utilizando o modelo Phong em tempo re
 Para sombreamento, utilizou-se uma técnica de projeção paralela simplificada onde objetos são projetados no plano do solo em uma altura constante. Foram implementadas duas categorias de sombra: \textit{ShadowRenderer} renderiza sombras dos boids com deformação de asas sincronizada ao movimento, enquanto \textit{DynamicObstacleShadowRenderer} renderiza sombras dos obstáculos (torres) com cálculo de altura relativa. A otimização de batching foi aplicada, realizando um único draw call por frame para todas as sombras de um tipo, reduzindo overhead de renderização.
 
 \subsection{Câmeras e Projeção}
-Foram implementadas quatro modos de câmera diferentes: (1) câmera fixa na torre de observação, (2) câmera atrás do boid objetivo, (3) câmera lateral direita e (4) câmera lateral esquerda. Todas utilizam projeção perspectiva com aspect ratio dinâmico responsivo ao redimensionamento de janela.
+Foram implementadas cinco modos de câmera diferentes: (1) câmera fixa na torre de observação, (2) câmera atrás do boid objetivo, (3) câmera lateral direita, (4) câmera lateral esquerda e (5) câmera livre. Todas utilizam projeção perspectiva com aspect ratio dinâmico responsivo ao redimensionamento de janela.
 
 \subsection{Efeitos Atmosféricos}
 Fog exponencial foi implementado no fragment shader, permitindo toggle em tempo real com a tecla F. O efeito blenda a cor final do pixel com a cor de fog baseado em distância à câmera, criando efeito de profundidade atmosférica realista.
@@ -136,7 +136,7 @@ A Tabela \ref{table:requirements} apresenta um resumo da conformidade com os req
 \hline
 Mundo, plano e torres & Básico & \textbf{✓} Implementado \\
 \hline
-Três modos de câmera & Básico & \textbf{✓} Implementado (4 modos) \\
+Cinco modos de câmera & Básico & \textbf{✓} Implementado (5 modos) \\
 \hline
 Iluminação Phong & Básico & \textbf{✓} Implementado \\
 \hline
@@ -162,7 +162,7 @@ Banking (roll) & Extra & \textbf{✓} Implementado (simplificado) \\
 \end{table}
 
 \subsection{Requisitos Básicos}
-Todos os seis requisitos básicos foram implementados com sucesso. O mundo contém um plano infinito como solo e cinco torres cilíndricas como obstáculos estáticos. Os boids são renderizados como pirâmides compostas por múltiplos triângulos, permitindo visualização adequada de orientação e movimento. O sistema suporta criação e remoção dinâmica de boids através da tecla U (adicionar) e MINUS (remover), funcionando também durante pausa. A animação de asas é realizada independentemente para cada boid mediante deformação de geometria em tempo real. A câmera oferece quatro perspectivas diferentes (torre, atrás, lateral direita e lateral esquerda), excedendo a especificação de três modos.
+Todos os seis requisitos básicos foram implementados com sucesso. O mundo contém um plano infinito como solo e cinco torres cilíndricas como obstáculos estáticos. Os boids são renderizados como pirâmides compostas por múltiplos triângulos, permitindo visualização adequada de orientação e movimento. O sistema suporta criação e remoção dinâmica de boids através da tecla U (adicionar) e MINUS (remover), funcionando também durante pausa. A animação de asas é realizada independentemente para cada boid mediante deformação de geometria em tempo real. A câmera oferece quatro perspectivas diferentes (torre, atrás, lateral direita e lateral esquerda), além de câmera livre, excedendo a especificação de três modos.
 
 \subsection{Obstáculos e Colisão}
 Cinco torres foram posicionadas estrategicamente no ambiente. Cada boid detecta colisão com estas estruturas e executa comportamento de fuga priorizada em relação às outras regras de flocking. O sistema implementa também um boid objetivo virtual que navega através dos obstáculos sem interação com eles, servindo como ponto de atração para o enxame.
@@ -254,7 +254,7 @@ Durante a implementação, alguns desafios técnicos surgiram:
 \end{itemize}
 
 \subsection{Conformidade e Cobertura}
-O projeto atingiu 100\% de conformidade com especificações (12 de 12 requisitos). Todos os requisitos básicos foram completamente implementados: mundo com obstáculos, quatro modos de câmera (excedendo o requisito de três), iluminação Phong, boids como pirâmides, criação/remoção dinâmica de boids (teclas U e MINUS), e animação de asas independente. Os cinco requisitos extras também foram implementados: obstáculos com colisão e desvio, sombras de boids e obstáculos, fog atmosférico, modo pausa com debug step-by-step, e redimensionamento responsivo de janela. O requisito Banking foi implementado na sua forma simplificada (roll baseado em aceleração lateral) para garantir um efeito visual de inclinação em curvas sem custo significativo de desempenho. A implementação priorizou estabilidade e baixo overhead, evitando quaternions complexos nesta fase.
+O projeto atingiu 100\% de conformidade com especificações (12 de 12 requisitos). Todos os requisitos básicos foram completamente implementados: mundo com obstáculos, cinco modos de câmera (excedendo o requisito de três), iluminação Phong, boids como pirâmides, criação/remoção dinâmica de boids (teclas U e MINUS), e animação de asas independente. Os cinco requisitos extras também foram implementados: obstáculos com colisão e desvio, sombras de boids e obstáculos, fog atmosférico, modo pausa com debug step-by-step, e redimensionamento responsivo de janela. O requisito Banking foi implementado na sua forma simplificada (roll baseado em aceleração lateral) para garantir um efeito visual de inclinação em curvas sem custo significativo de desempenho. A implementação priorizou estabilidade e baixo overhead, evitando quaternions complexos nesta fase.
 
 \subsection{Sistema de Entrada e Interação}
 O sistema de entrada foi otimizado para capturar eventos de teclado de forma robusta. A tecla U (criar boid) funciona tanto quando o jogo está em execução quanto quando pausado, permitindo manipulação flexível do cenário. A tecla MINUS remove boids aleatoriamente (mantendo sempre uma quantidade mínima para a simulação funcionar). O preview de iluminação (tecla C) permite posicionar a fonte de luz com rotação via clique direito do mouse e scroll para aumentar/diminuir distância, com confirmação pela mesma tecla C.
